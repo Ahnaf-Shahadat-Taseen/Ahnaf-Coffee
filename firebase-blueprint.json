@@ -1,0 +1,96 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "Coffee shop menu item including coffees, teas, and bakery items.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique product ID" },
+        "name": { "type": "string", "description": "Name of the coffee or pastry", "maxLength": 100 },
+        "description": { "type": "string", "description": "Flavor notes and description", "maxLength": 500 },
+        "price": { "type": "number", "description": "Price in Bangladeshi Taka (BDT ৳)" },
+        "category": { "type": "string", "description": "Menu category", "enum": ["Hot Coffee", "Cold Brews", "Pastries & Bakery", "Specialty Blends"] },
+        "imageUrl": { "type": "string", "description": "Unsplash or external image URL", "maxLength": 1000 },
+        "stock": { "type": "number", "description": "Current quantity in stock" },
+        "isAvailable": { "type": "boolean", "description": "Whether item is currently orderable" },
+        "featured": { "type": "boolean", "description": "Featured on homepage" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "description": "Last updated timestamp" }
+      },
+      "required": ["name", "price", "category", "imageUrl", "stock", "isAvailable"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer order with items, status, and Cash on Delivery / Counter pickup details.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Order tracking code / ID" },
+        "customerName": { "type": "string", "description": "Name of the ordering customer", "maxLength": 100 },
+        "customerEmail": { "type": "string", "description": "Email address of customer", "maxLength": 150 },
+        "customerPhone": { "type": "string", "description": "Phone number for order notification", "maxLength": 30 },
+        "deliveryAddress": { "type": "string", "description": "Delivery address or Counter Pickup note", "maxLength": 300 },
+        "orderType": { "type": "string", "description": "Fulfillment type", "enum": ["Cash on Delivery", "Pay at Counter / Dine-in"] },
+        "paymentMethod": { "type": "string", "description": "Strictly Cash on Delivery / Pay at Counter" },
+        "items": { "type": "array", "description": "List of ordered items with quantity and price" },
+        "totalAmount": { "type": "number", "description": "Total order amount in BDT ৳" },
+        "status": { "type": "string", "description": "Order progression status", "enum": ["pending", "brewing", "ready", "completed", "cancelled"] },
+        "userId": { "type": "string", "description": "UID of the user or guest-id" },
+        "notes": { "type": "string", "description": "Special brewing or delivery instructions", "maxLength": 500 },
+        "createdAt": { "type": "string", "description": "Order creation timestamp" },
+        "updatedAt": { "type": "string", "description": "Last status update timestamp" }
+      },
+      "required": ["customerName", "customerPhone", "orderType", "paymentMethod", "items", "totalAmount", "status"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with RBAC role (admin, staff, customer).",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID or document ID" },
+        "email": { "type": "string", "description": "User email address", "maxLength": 150 },
+        "displayName": { "type": "string", "description": "Full name", "maxLength": 100 },
+        "role": { "type": "string", "description": "Role for access control", "enum": ["admin", "staff", "customer"] },
+        "phone": { "type": "string", "description": "Contact number", "maxLength": 30 },
+        "avatarUrl": { "type": "string", "description": "Profile picture URL", "maxLength": 1000 },
+        "dutyTitle": { "type": "string", "description": "For staff: Head Barista, Cashier, etc.", "maxLength": 100 },
+        "shift": { "type": "string", "description": "For staff: Morning, Evening, Full Day", "maxLength": 50 },
+        "createdAt": { "type": "string", "description": "Profile creation timestamp" }
+      },
+      "required": ["email", "displayName", "role"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "Customer feedback and ratings for coffee and pastries.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Review unique identifier" },
+        "productId": { "type": "string", "description": "Product ID referenced", "maxLength": 100 },
+        "productName": { "type": "string", "description": "Name of reviewed item", "maxLength": 100 },
+        "customerName": { "type": "string", "description": "Reviewer display name", "maxLength": 100 },
+        "userId": { "type": "string", "description": "Customer user ID" },
+        "rating": { "type": "number", "description": "Score from 1 to 5" },
+        "comment": { "type": "string", "description": "Customer comments and notes", "maxLength": 600 },
+        "createdAt": { "type": "string", "description": "Review creation timestamp" }
+      },
+      "required": ["productName", "customerName", "rating", "comment"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Public catalog of coffee, beverages and baked items managed by admin and staff."
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Customer orders with live status managed by customer, staff, and super admin."
+    },
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile records containing roles, staff duties, and customer info."
+    },
+    "/reviews/{reviewId}": {
+      "schema": "Review",
+      "description": "Customer ratings and verified comments for coffee shop menu."
+    }
+  }
+}

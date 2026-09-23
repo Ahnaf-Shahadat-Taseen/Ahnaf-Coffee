@@ -1,0 +1,6 @@
+{
+  "name": "Ahnaf Coffee Shop",
+  "description": "Artisanal handcrafted coffees, fresh pastries, online ordering with Cash on Delivery / Counter pickup, real-time order tracking, and role-based staff & super admin management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

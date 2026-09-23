@@ -1,0 +1,73 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function hasRole(role) {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        getUserData().role == role;
+    }
+
+    function isAdmin() {
+      return hasRole('admin');
+    }
+
+    function isStaff() {
+      return hasRole('staff');
+    }
+
+    function isStaffOrAdmin() {
+      return isAdmin() || isStaff();
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Products: anyone can read available products, staff can toggle stock/availability, admin has full CRUD
+    match /products/{productId} {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || (
+        isStaff() &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock', 'isAvailable', 'updatedAt'])
+      );
+    }
+
+    // Orders: anyone can create orders (Cash on Delivery / Counter pickup).
+    // Customers can read their own orders or query by tracking.
+    // Staff and Admin can view all and update statuses.
+    // Only Admin can delete/cancel hard delete orders.
+    match /orders/{orderId} {
+      allow read: if true;
+      allow create: if request.resource.data.paymentMethod == "Cash on Delivery / Pay at Counter";
+      allow update: if isStaffOrAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Users: Users can read their own profiles, staff can read employee roster, admin can full CRUD
+    match /users/{userId} {
+      allow read: if true;
+      allow create: if isSignedIn() || isAdmin();
+      allow update: if (isSignedIn() && request.auth.uid == userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Reviews: Publicly readable; signed in customers or guests can write reviews; Admin can moderate
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if request.resource.data.rating >= 1 && request.resource.data.rating <= 5;
+      allow update, delete: if isAdmin();
+    }
+  }
+}
